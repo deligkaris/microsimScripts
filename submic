@@ -1,0 +1,147 @@
+#!/bin/bash
+
+# Slurm default arguments
+defaultWalltime="--time=1:00:00"
+defaultNtasks="--ntasks-per-node=1"
+defaultNodes="--nodes=1"
+defaultAccount="--account=PAS2139"
+
+# check the arguments
+if [ $# -lt 1 ]; then
+	echo $'\nERROR: you need at least one argument (the input file)....\n'
+	echo $'USAGE: submic yourInputFile.csv yourSlurmArguments\n'
+	echo $"Slurm default arguments: $defaultWalltime $defaultNtasks $defaultNodes $defaultAccount"
+	exit
+fi
+
+inputFile="$1"
+
+# check if the input file is a CSV file
+if [[ $inputFile != *.csv ]] ; then
+	echo $'\nERROR: input file is not a CSV file\n'
+	exit
+fi
+
+# check if the input file is an ordinary file and readable
+if [ ! -f "$inputFile" ] || [ ! -r "$inputFile" ] ; then
+        echo $"\nERROR: cannot find or read input file \"${inputFile}\"\n"
+        exit
+fi
+
+# run a perl script to determine if the csv input file has correct format
+checkTrialsetInputFile.pl $inputFile
+
+if [ $? == 1 ]; then # $? captures sys.exit() of the last command
+	echo $'\nERROR: CSV input file does not have the correct format\n'
+	exit
+fi
+
+outputfile="${1%.csv}".log
+stdoutputfile="stdoutput.log"
+jobname=$(echo "$inputFile" | awk '{print substr($0,1,15)}')
+jobname=MIC-"${jobname}"
+microsimDir="/users/PAS2164/deligkaris/MICROSIM/CODE/microsim"
+
+# pass the sbatch arguments
+sbatch_arg=
+for arg in $@; do
+        if [ $arg != $0 ] && [ $arg != $1 ] ; then
+                # pass the argument
+                sbatch_arg="$sbatch_arg $arg"
+	fi
+done
+
+# export the name of the input file to the environment so that SLURM can pass it on to python
+#export INPUTFILE="$SLURM_SUBMIT_DIR"."$inputFile"
+
+# submit the SLURM job
+sbatch ${sbatch_arg} << EOF
+#!/bin/bash
+##################################################################
+
+# note: slurm options specified on the command line will take precedence over slurm options in a job script
+
+# note: Jobs are charged based length, number of cores, amount of memory, single node versus multi-node, and type of resource
+# (so charges do not depend on which partition I use)
+# https://www.osc.edu/supercomputing/knowledge-base/job_and_storage_charging
+
+# Define the job name
+#SBATCH --job-name=$jobname
+
+# Set a pattern for the output file.
+##SBATCH --output=$stdoutputfile
+#SBATCH -e stderr.txt
+#SBATCH -o stdout.txt
+
+# all environment variables will be exported to the context of the job, including the name of the input file  
+#SBATCH --export=ALL 
+
+# default project account to be charged
+#SBATCH --account=PAS2139
+
+# number of CPUs
+# An individual user can have up to 128 concurrently running jobs and/or up to 2040  processor cores in use on Pitzer. 
+# All the users in a particular group/project can among them have up to 192 concurrently running jobs and/or up to 2040 processor 
+# cores in use on Pitzer. Jobs submitted in excess of these limits are queued but blocked by the scheduler until other jobs 
+# exit and free up resources.
+#SBATCH --ntasks-per-node=1
+
+# number of nodes
+#SBATCH --nodes=1
+
+# walltime 
+# Serial jobs (that is, jobs which request only one node) can run for up to 168 hours (7 days), while parallel jobs may run for 
+# up to 96 hours (4 days). Users who can demonstrate a need for longer serial job time may request access to the longserial queue, 
+# which allows single-node jobs of up to 336 hours (14 days). 
+# https://www.osc.edu/supercomputing/batch-processing-at-osc/scheduling-policies-and-limits
+#SBATCH --time=1:00:00
+
+# partition requested
+# it is recommended to set ntasks and walltime and let SLURM choose partition, charges do not depend on which partition is used
+##SBATCH --partition=
+
+# sets when to send emails, options: BEGIN, END, FAIL, ALL
+##SBATCH --mail-type=ALL 
+
+##################################################################
+
+# useful for debugging, prints each command in the log file as it is executed, with a + in front of it
+#set -x
+
+# Copy input data to the nodes fast local disk
+#cp ~/week42/data/source1/data8.in $TMPDIR
+
+# path to a node-specific temporary directory (/tmp) for a given job
+#cd $TMPDIR
+
+cd "$microsimDir"
+
+# if you are running an openMP job, this needs to be the same as ntasks (see above)
+# if it is a serial job, no need to do anything
+export OMP_NUM_THREADS=$SLURM_NTASKS
+echo \$OMP_NUM_THREADS
+
+# export the name of the input file to the environment so that SLURM can pass it on to python
+export INPUTFILE=\$SLURM_SUBMIT_DIR/"$inputFile"
+
+# print date, time and store start time
+date
+startTime=\$SECONDS
+
+# run the code
+#poetry run python ./microsim/christosTest.py > "/users/PAS2164/deligkaris/microsim.log"
+poetry run python ./microsim/christosTest.py > \$SLURM_SUBMIT_DIR/microsim.log 
+#poetry run python ./microsim/christosTest.py 1> "microsim.log" 2> "microsimError.log"
+#poetry run python ./microsim/christosTest.py > "${currentAnalysisDir}/submic1.log"
+
+# print date, time and store end time
+date
+endTime=\$SECONDS
+
+# print run time in hours and minutes (integer division)
+echo "\$(((\$endTime - \$startTime)/3600)) hr or \$(((\$endTime - \$startTime)/60)) min"
+
+# Copy results to proper folder
+#cp  data8.out ~/week42/results
+
+EOF
