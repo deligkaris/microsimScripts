@@ -3,7 +3,7 @@
 ##
 ## author: Christos Deligkaris
 ## date: November 2022
-## function: divides a large microsim trial set calculation to smaller trial set calculations and submits them
+## function: checks the microsim trial input file and returns True if all tests are passed and False otherwise
 ##
 ##################################################################################################################
 use diagnostics;

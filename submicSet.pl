@@ -75,13 +75,13 @@ foreach $iDem (0..scalar(@dementia)-1) {
 
 			writeSubFile($folderSubFile,$folderInputFile,$nNodes,$nTasksPerNode,$timePerCalculation,$nSocketsPerNode,$nCoresPerSocket);
 
-			#submitJob($folderSubFile,$cancelJobsRef,$folder);			
+			submitJob($folderSubFile,$cancelJobsRef,$folder);			
 
 		        chdir("../");
 		}
 	}
 }			
 
-#writeCancelJobFile(\@cancelJobs);
+writeCancelJobFile(\@cancelJobs);
 
 

@@ -181,14 +181,14 @@ sub getComputingParameters {
 	my ($nTrialsPerCalculation,$nCores,$nProcesses,$nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation);
 
 	# these parameters are based on testing with Microsim performance on the OSC cluster
-	$nCores = 24;
-	$nProcesses = $nCores;
-	$nNodes = 1;
-	$nTasksPerNode = 24;
-	$nSocketsPerNode = 1;
-	$nCoresPerSocket = $nCores;
-	$nTrialsPerCalculation = $nCores * 4;
-	$timePerCalculation = "12:00:00";
+	$nCores = 24;	# number of cores used
+	$nProcesses = $nCores; 	# number of processes running at the same time, equal to number of trials running at the same time
+	$nNodes = 1; 	# number of computing nodes
+	$nTasksPerNode = 24;	# equal to number of processes (this depends on how OSC setup SLURM)
+	$nSocketsPerNode = 1;	# number of CPU sockets to use in a node
+	$nCoresPerSocket = $nCores;	# number of cores in a socket
+	$nTrialsPerCalculation = $nCores * 4;	# how many trials to run in a calculation
+	$timePerCalculation = "8:00:00";	# how much time to request in a calculation
 
 	return $nTrialsPerCalculation,$nCores,$nProcesses,$nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation;
 }
