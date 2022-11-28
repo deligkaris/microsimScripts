@@ -22,7 +22,7 @@ use Array::Compare;
 use Data::Types qw/:all/;
 use Text::CSV_XS;
 
-use lib '/users/PAS2164/deligkaris/SCRIPTS/'; # add directory to search path for modules
+use lib '/users/PAS2164/deligkaris/MICROSIM/SCRIPTS/'; # add directory to search path for modules
 use microsimTrialset qw(checkIfProbability checkIfInteger checkIfPositive checkIfDivisibleBy2 checkIfIntegerMultiple checkIfSorted checkIfUnique readInputFile getComputingParameters writeInputFile submitJob writeSubFile writeCancelJobFile);
 
 #definitions
@@ -70,10 +70,10 @@ if( not(checkIfProbability(\@cv))  ) {
 }
 
 # nTrialsPerRiskset must be integer, positive, integer multiple of nTrialsPerCalculation
-#if ( not(is_int($nTrialsPerRiskset)) | ($nTrialsPerRiskset<0) | ($nTrialsPerRiskset % $nTrialsPerCalculation != 0) ) {
-#	print "\n ERROR in $0: nTrialsPerRiskset must be integers, positive and integer multiple of nTrialsPerCalculation ($nTrialsPerCalculation)\n\n";
-#	exit 1;
-#}
+if ( not(is_int($nTrialsPerRiskset)) | ($nTrialsPerRiskset<0) | ($nTrialsPerRiskset % $nTrialsPerCalculation != 0) ) {
+	print "\n ERROR in $0: nTrialsPerRiskset must be integers, positive and integer multiple of nTrialsPerCalculation ($nTrialsPerCalculation)\n\n";
+	exit 1;
+}
 
 # nProcesses must be the optimal value as defined in getComputingParameters
 if (defined $nProcesses) {

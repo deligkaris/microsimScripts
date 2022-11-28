@@ -181,13 +181,13 @@ sub getComputingParameters {
 	my ($nTrialsPerCalculation,$nCores,$nProcesses,$nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation);
 
 	# these parameters are based on testing with Microsim performance on the OSC cluster
-	$nTrialsPerCalculation = 50;
 	$nCores = 24;
-	$nProcesses = 10;
+	$nProcesses = $nCores;
 	$nNodes = 1;
 	$nTasksPerNode = 24;
 	$nSocketsPerNode = 1;
 	$nCoresPerSocket = $nCores;
+	$nTrialsPerCalculation = $nCores * 4;
 	$timePerCalculation = "12:00:00";
 
 	return $nTrialsPerCalculation,$nCores,$nProcesses,$nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation;

@@ -22,7 +22,7 @@ use Array::Compare;
 use Data::Types qw/:all/;
 use Text::CSV_XS;
 
-use lib '/users/PAS2164/deligkaris/SCRIPTS/'; # add directory to search path for modules
+use lib '/users/PAS2164/deligkaris/MICROSIM/SCRIPTS/'; # add directory to search path for modules
 use microsimTrialset qw(getLogFile getFolderLogFile readInputFile getComputingParameters writeInputFile submitJob writeSubFile writeCancelJobFile);
 
 #definitions
@@ -94,7 +94,6 @@ foreach $iDem (0..scalar(@dementia)-1) {
 				close $fhFolder;
                                 print("ERROR in $0: cannot open $folderLogFile\n\n");
                                 chdir("../");
-                                #next;
 			}
 		}
 	}
