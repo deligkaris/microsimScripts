@@ -5,7 +5,8 @@
 # date: November 2022
 # function: submits automatically several/many Microsim Trialset calculations to the Ohio Supercomputer Center (OSC),
 # note: expects two arguments, the trialset input csv file with all parameters and the python script file
-# note: 
+# note: advantage of using this script is the use (and acceleration) that pandarallel offers in simulations with
+# 	large populations
 #
 #################################################################################################################
 use diagnostics;
@@ -35,7 +36,6 @@ my ($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef); # references to arrays
 my ($nTrialsPerRiskset,$nRisksets,$nCalculations); 	# help divide calculation in smaller scale calculations
 my ($nTrialsPerCalculation,$nCalculationsPerRiskset,$nCores,$nProcesses);	# parameters of small scale calculations
 my ($nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation); # parameters of small scale calculations
-#my ($iDem,$iCv,$iCalculationPerRiskset); 	# iterators
 my ($iRiskset); # iterators
 my (@cancelJobs); 	# store commands to cancel all submitted jobs (just in case)
 my (@folders,$folder,$folderInputFile,$folderSubFile,@folderDementia,@folderCv); 	# folder and folder arrays
@@ -62,13 +62,8 @@ $microsimScript = $ARGV[1];
 @dementia = @$dementiaRef;
 @cv = @$cvRef;
 
-#($nTrialsPerCalculation,$nCores,$nProcesses,$nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation) = getComputingParameters();
-#$nTrialsPerCalculation = $nTrialsPerRiskset;
-
 # calculate some important quantities
 $nRisksets = scalar(@dementia);
-#$nCalculationsPerRiskset = $nTrialsPerRiskset / $nTrialsPerCalculation;
-#$nCalculations = $nRisksets * $nCalculationsPerRiskset;
 
 @cancelJobs = ();	# array that will hold shell script commands that allow to cancel all submitted calculations
 $folderSubFile = "submitCommand.sh";	# file name of shell script that submits job
