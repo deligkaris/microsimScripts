@@ -258,16 +258,13 @@ sub writeInputFile {
 
 sub submitJob {
 
-	my($folderSubFile,$cancelJobsRef,$folder) = @_;
+	my($folderSubFile,$cancelJobsRef,$folder) = @_; 
 	my(@cancelJobs);
 	my($subReturn);
 
-	# dereference array reference to array
-	@cancelJobs = @$cancelJobsRef;
-
 	$subReturn = `./$folderSubFile`;	# backquotes `` submit command to shell and return result
 	if( $subReturn =~ m/^Submitted batch job (\d+)/ ) {	# $1 refers to the first pattern that matched (\d+)
-		push(@cancelJobs,"scancel $1\n");
+		push(@$cancelJobsRef,"scancel $1\n"); #cannot dereference array prior to this, only way to use reference is this one
 	}
 	else {
 	        die("\nERROR: calculation on folder $folder was not submitted\n");      
@@ -277,11 +274,11 @@ sub submitJob {
 sub writeSubFile {
 
 	#my($folderSubFile,$folderInputFile,$nNodes,$nTasksPerNode,$timePerCalculation,$nSocketsPerNode,$nCoresPerSocket) = @_;
-	my($folderSubFile,$folderInputFile,$nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation) = @_;
+	my($folderSubFile,$microsimScript,$nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation) = @_;
 	my($fh);
 
         open($fh,'>',$folderSubFile);
-        print $fh    "submicMp $folderInputFile ".
+        print $fh    "submic $microsimScript ".
         			"--nodes=$nNodes ".
                                 "--ntasks-per-node=$nTasksPerNode ".
                                 "--time=$timePerCalculation  ".
