@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Author: Christos Deligkaris
+# Date: December 2022
+# Purpose: This shell script submits a Microsim python job to the Ohio Supercomputer Center
+# Note: This script is specific to Microsim because the python script is run using 
+# 	the Microsim Poetry environment
+
 # Slurm default arguments
 defaultWalltime="--time=1:00:00"
 defaultNtasks="--ntasks-per-node=1"
