@@ -70,18 +70,20 @@ if( not(checkIfProbability(\@cv))  ) {
 }
 
 # nTrialsPerRiskset must be integer, positive, integer multiple of nTrialsPerCalculation
-if ( not(is_int($nTrialsPerRiskset)) | ($nTrialsPerRiskset<0) | ($nTrialsPerRiskset % $nTrialsPerCalculation != 0) ) {
-	print "\n ERROR in $0: nTrialsPerRiskset must be integers, positive and integer multiple of nTrialsPerCalculation ($nTrialsPerCalculation)\n\n";
+#if ( not(is_int($nTrialsPerRiskset)) | ($nTrialsPerRiskset<0) | ($nTrialsPerRiskset % $nTrialsPerCalculation != 0) ) {
+#	print "\n ERROR in $0: nTrialsPerRiskset must be integers, positive and integer multiple of nTrialsPerCalculation ($nTrialsPerCalculation)\n\n";
+if ( not(is_int($nTrialsPerRiskset)) | ($nTrialsPerRiskset<0)) {
+       print "\n ERROR in $0: nTrialsPerRiskset must be integers and positive\n\n";
 	exit 1;
 }
 
 # nProcesses must be the optimal value as defined in getComputingParameters
-if (defined $nProcesses) {
-	if ( $nProcesses != $nProcessesDefault ) {
-		print "\n ERROR in $0: nProcesses must be the optimal value of $nProcessesDefault as defined in getComputingParameters\n\n";
-		exit 1;
-	}
-}
+#if (defined $nProcesses) {
+#	if ( $nProcesses != $nProcessesDefault ) {
+#		print "\n ERROR in $0: nProcesses must be the optimal value of $nProcessesDefault as defined in getComputingParameters\n\n";
+#		exit 1;
+#	}
+#}
 
 # if did not fail until now, assume all is well
 exit 0;

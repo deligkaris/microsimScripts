@@ -150,7 +150,8 @@ sub readInputFile {
 	my($inputFile) = @_; # input: the input file name
 	# local variables
 	my($csv,$row,$fh);
-	my(@sampleSizes,@durations,@dementia,@cv,$nTrialsPerRiskset,$nProcesses);
+	my(@sampleSizes,@durations,@dementia,@cv,$nTrialsPerRiskset);
+	my($nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation);
 
 	# use a CSV parsing library to read the input CSV file
  	# better than reading the file manually
@@ -159,6 +160,7 @@ sub readInputFile {
  	#get data from the CSV input file, row by row
  	open $fh, "<", "$inputFile" or die "$inputFile: $!";
  	$row = $csv->getline($fh); # skip the header
+	$row = $csv->getline($fh); # skip the header
  	$row = $csv->getline($fh); # read sample sizes
  	@sampleSizes = @$row;
  	$row = $csv->getline($fh); # read durations
@@ -169,11 +171,25 @@ sub readInputFile {
  	@cv = @$row;
  	$row = $csv->getline($fh); # read number of trials
  	$nTrialsPerRiskset = $$row[0];
-	$row = $csv->getline($fh); # read number of processes (optional)
-	$nProcesses = $$row[0];	   # works even if $row is undef	
-
+	#$row = $csv->getline($fh); # read number of processes (optional)
+	#$nProcesses = $$row[0];	   # works even if $row is undef	
+	$row = $csv->getline($fh); # read # of nodes
+	$nNodes = $$row[0];
+	$row = $csv->getline($fh); # read # of cores
+	$nCores = $$row[0];
+	$row = $csv->getline($fh); # read # of processes
+	$nProcesses = $$row[0];
+	$row = $csv->getline($fh); # read # of tasks per node
+	$nTasksPerNode = $$row[0];
+	$row = $csv->getline($fh); # read # of sockets per node
+	$nSocketsPerNode = $$row[0];
+	$row = $csv->getline($fh); # read # of cores per socket
+	$nCoresPerSocket = $$row[0];
+	$row = $csv->getline($fh); # read time per calculation
+	$timePerCalculation = $$row[0];
 	# must return references to arrays (hence \@), perl cannot return arrays
-	return \@sampleSizes,\@durations,\@dementia,\@cv,$nTrialsPerRiskset,$nProcesses; 
+	return \@sampleSizes,\@durations,\@dementia,\@cv,$nTrialsPerRiskset,
+		$nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation; 
 }
 
 sub getComputingParameters {
@@ -231,6 +247,7 @@ sub writeInputFile {
 	$inputFile = lc($folder)."-input.csv";
        	open($fh,'>',$inputFile);
        	print $fh "# sample sizes, durations, dementia thresholds, cv thresholds, trialset size, processes\n";
+	print $fh "# \n";
        	print $fh join(', ',@sampleSizes), "\n";
        	print $fh join(', ',@durations), "\n";
        	print $fh "$dementia\n$cv\n$nTrialsPerCalculation\n$nProcesses";
@@ -259,7 +276,8 @@ sub submitJob {
 
 sub writeSubFile {
 
-	my($folderSubFile,$folderInputFile,$nNodes,$nTasksPerNode,$timePerCalculation,$nSocketsPerNode,$nCoresPerSocket) = @_;
+	#my($folderSubFile,$folderInputFile,$nNodes,$nTasksPerNode,$timePerCalculation,$nSocketsPerNode,$nCoresPerSocket) = @_;
+	my($folderSubFile,$folderInputFile,$nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation) = @_;
 	my($fh);
 
         open($fh,'>',$folderSubFile);

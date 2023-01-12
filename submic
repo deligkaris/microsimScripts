@@ -9,16 +9,16 @@ defaultAccount="--account=PAS2139"
 # check the arguments
 if [ $# -lt 1 ]; then
 	echo $'\nERROR: you need at least one argument (the input file)....\n'
-	echo $'USAGE: submic yourInputFile.csv yourSlurmArguments\n'
+	echo $'USAGE: submic yourPythonFile.py yourSlurmArguments\n'
 	echo $"Slurm default arguments: $defaultWalltime $defaultNtasks $defaultNodes $defaultAccount"
 	exit
 fi
 
 inputFile="$1"
 
-# check if the input file is a CSV file
-if [[ $inputFile != *.csv ]] ; then
-	echo $'\nERROR: input file is not a CSV file\n'
+# check if the input file is a python file
+if [[ $inputFile != *.py ]] ; then
+	echo $'\nERROR: input file is not a .py file\n'
 	exit
 fi
 
@@ -28,18 +28,10 @@ if [ ! -f "$inputFile" ] || [ ! -r "$inputFile" ] ; then
         exit
 fi
 
-# run a perl script to determine if the csv input file has correct format
-checkTrialsetInputFile.pl $inputFile
-
-if [ $? == 1 ]; then # $? captures sys.exit() of the last command
-	echo $'\nERROR: CSV input file does not have the correct format\n'
-	exit
-fi
-
-outputfile="${1%.csv}".log
+outputFile="${1%.py}".log
 stdoutputfile="stdoutput.log"
 jobname=$(echo "$inputFile" | awk '{print substr($0,1,15)}')
-jobname=MIC-"${jobname}"
+#jobname=MIC-"${jobname}" #if you want to prepend this to the jobname
 microsimDir="/users/PAS2164/deligkaris/MICROSIM/CODE/microsim"
 
 # pass the sbatch arguments
@@ -105,6 +97,10 @@ sbatch ${sbatch_arg} << EOF
 
 ##################################################################
 
+# print date, time and store start time
+date
+startTime=\$SECONDS
+
 # useful for debugging, prints each command in the log file as it is executed, with a + in front of it
 #set -x
 
@@ -114,34 +110,30 @@ sbatch ${sbatch_arg} << EOF
 # path to a node-specific temporary directory (/tmp) for a given job
 #cd $TMPDIR
 
-cd "$microsimDir"
+cd "$microsimDir" # poetry requires to run python from there
 
 # if you are running an openMP job, this needs to be the same as ntasks (see above)
 # if it is a serial job, no need to do anything
-export OMP_NUM_THREADS=$SLURM_NTASKS
-echo \$OMP_NUM_THREADS
+export OMP_NUM_THREADS=\$SLURM_NTASKS
+#echo \$OMP_NUM_THREADS #test if export is working or not
 
 # export the name of the input file to the environment so that SLURM can pass it on to python
-export INPUTFILE=\$SLURM_SUBMIT_DIR/"$inputFile"
+# export INPUTFILE=\$SLURM_SUBMIT_DIR/"$inputFile"
 
-# print date, time and store start time
-date
-startTime=\$SECONDS
-
-# run the code
-#poetry run python ./microsim/christosTest.py > "/users/PAS2164/deligkaris/microsim.log"
-poetry run python ./microsim/christosTest.py > \$SLURM_SUBMIT_DIR/microsim.log 
+# run the code, if output is not directed, it goes to standard output
+poetry run python \$SLURM_SUBMIT_DIR/"$inputFile" > \$SLURM_SUBMIT_DIR/"$outputFile"
+#poetry run python ./microsim/christosTest.py > \$SLURM_SUBMIT_DIR/microsim.log 
 #poetry run python ./microsim/christosTest.py 1> "microsim.log" 2> "microsimError.log"
 #poetry run python ./microsim/christosTest.py > "${currentAnalysisDir}/submic1.log"
+
+# Copy results to proper folder
+#cp  data8.out ~/week42/results
 
 # print date, time and store end time
 date
 endTime=\$SECONDS
 
 # print run time in hours and minutes (integer division)
-echo "\$(((\$endTime - \$startTime)/3600)) hr or \$(((\$endTime - \$startTime)/60)) min"
-
-# Copy results to proper folder
-#cp  data8.out ~/week42/results
+echo "wall time  \$(((\$endTime - \$startTime)/3600)) hr or \$(((\$endTime - \$startTime)/60)) min"
 
 EOF
