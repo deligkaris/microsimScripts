@@ -150,7 +150,7 @@ sub readInputFile {
 	my($inputFile) = @_; # input: the input file name
 	# local variables
 	my($csv,$row,$fh);
-	my(@sampleSizes,@durations,@dementia,@cv,$nTrialsPerRiskset);
+	my(@sampleSizes,@durations,@dementia,@cv,$nTrialsPerRiskset,$nConcurrentTrials);
 	my($nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation);
 
 	# use a CSV parsing library to read the input CSV file
@@ -171,8 +171,8 @@ sub readInputFile {
  	@cv = @$row;
  	$row = $csv->getline($fh); # read number of trials
  	$nTrialsPerRiskset = $$row[0];
-	#$row = $csv->getline($fh); # read number of processes (optional)
-	#$nProcesses = $$row[0];	   # works even if $row is undef	
+	$row = $csv->getline($fh); # read number of trials to run concurrently (using the parallel trialset class)
+	$nConcurrentTrials = $$row[0];	   	
 	$row = $csv->getline($fh); # read # of nodes
 	$nNodes = $$row[0];
 	$row = $csv->getline($fh); # read # of cores
@@ -188,7 +188,7 @@ sub readInputFile {
 	$row = $csv->getline($fh); # read time per calculation
 	$timePerCalculation = $$row[0];
 	# must return references to arrays (hence \@), perl cannot return arrays
-	return \@sampleSizes,\@durations,\@dementia,\@cv,$nTrialsPerRiskset,
+	return \@sampleSizes,\@durations,\@dementia,\@cv,$nTrialsPerRiskset,$nConcurrentTrials,
 		$nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation; 
 }
 

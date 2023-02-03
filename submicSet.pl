@@ -33,7 +33,7 @@ use microsimTrialset qw(readInputFile getComputingParameters writeInputFile subm
 my (@sampleSizes,@durations); 	# trial set parameters
 my (@dementia,@cv);  		# risk factors
 my ($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef); # references to arrays
-my ($nTrialsPerRiskset,$nRisksets,$nCalculations); 	# help divide calculation in smaller scale calculations
+my ($nTrialsPerRiskset,$nConcurrentTrials,$nRisksets,$nCalculations); 	# help divide calculation in smaller scale calculations
 my ($nTrialsPerCalculation,$nCalculationsPerRiskset,$nCores,$nProcesses);	# parameters of small scale calculations
 my ($nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation); # parameters of small scale calculations
 my ($iRiskset); # iterators
@@ -48,9 +48,9 @@ if(@ARGV < 2 || @ARGV > 2) { #need to get exactly two arguments
 	exit 1;
 }
 
-# readInputFile will return nProcesses which we will ignore here because we do not need it, and may be undef
-($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef,$nTrialsPerRiskset,
-#$nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation,undef) = readInputFile($ARGV[0]);
+#all trialset-related parameters
+($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef,$nTrialsPerRiskset,$nConcurrentTrials,
+#all SLURM-related parameters
 $nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation) = readInputFile($ARGV[0]);
 
 # get the name of the python script
@@ -79,7 +79,7 @@ foreach $iRiskset (0..$nRisksets-1) {
 			
 	$folderInputFile = writeInputFile($folder,
 					  \@sampleSizes,\@durations,$dementia[$iRiskset],$cv[$iRiskset],$nTrialsPerRiskset,
-					  $nProcesses);
+					  $nConcurrentTrials);
 
 	writeSubFile($folderSubFile,$microsimScript,
  		     $nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation);
