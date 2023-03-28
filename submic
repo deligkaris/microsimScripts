@@ -38,6 +38,8 @@ outputFile="${1%.py}".log
 stdoutputfile="stdoutput.log"
 jobname=$(echo "$inputFile" | awk '{print substr($0,1,15)}')
 #jobname=MIC-"${jobname}" #if you want to prepend this to the jobname
+
+#set the microsim directory so that I can copy microsim to the computing node
 microsimDir="/users/PAS2164/deligkaris/MICROSIM/CODE/microsim"
 
 # pass the sbatch arguments
@@ -110,13 +112,16 @@ startTime=\$SECONDS
 # useful for debugging, prints each command in the log file as it is executed, with a + in front of it
 #set -x
 
+# path to a node-specific temporary directory (/tmp) for a given job, the name of this directory includes 
+# the JOBID, so if two jobs run on the same node, each will definitely get their own TMPDIR
+cd \$TMPDIR
 # Copy input data to the nodes fast local disk
-#cp ~/week42/data/source1/data8.in $TMPDIR
-
-# path to a node-specific temporary directory (/tmp) for a given job
-#cd $TMPDIR
-
-cd "$microsimDir" # poetry requires to run python from there
+cp \$SLURM_SUBMIT_DIR/* ./
+# copy the poetry virtual environment to local disk and activate
+cp -r /users/PAS2164/deligkaris/.cache/pypoetry/virtualenvs/microsim-gKvDNsM8-py3.9 ./
+source ./microsim-gKvDNsM8-py3.9/bin/activate
+cp -r "$microsimDir" ./
+cd microsim #poetry requires running python from the microsim directory
 
 # if you are running an openMP job, this needs to be the same as ntasks (see above)
 # if it is a serial job, no need to do anything
@@ -127,10 +132,7 @@ export OMP_NUM_THREADS=\$SLURM_NTASKS
 # export INPUTFILE=\$SLURM_SUBMIT_DIR/"$inputFile"
 
 # run the code, if output is not directed, it goes to standard output
-poetry run python \$SLURM_SUBMIT_DIR/"$inputFile" > \$SLURM_SUBMIT_DIR/"$outputFile"
-#poetry run python ./microsim/christosTest.py > \$SLURM_SUBMIT_DIR/microsim.log 
-#poetry run python ./microsim/christosTest.py 1> "microsim.log" 2> "microsimError.log"
-#poetry run python ./microsim/christosTest.py > "${currentAnalysisDir}/submic1.log"
+poetry run python \$TMPDIR/"$inputFile" > \$SLURM_SUBMIT_DIR/"$outputFile"
 
 # Copy results to proper folder
 #cp  data8.out ~/week42/results
