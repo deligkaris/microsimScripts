@@ -72,6 +72,8 @@ sbatch ${sbatch_arg} << EOF
 ##SBATCH --output=$stdoutputfile
 #SBATCH -e stderr.txt
 #SBATCH -o stdout.txt
+##SBATCH --error=\$TMPDIR/stderr.txt
+##SBATCH --output=\$TMPDIR/stdout.txt
 
 # all environment variables will be exported to the context of the job, including the name of the input file  
 #SBATCH --export=ALL 
@@ -115,14 +117,19 @@ startTime=\$SECONDS
 # path to a node-specific temporary directory (/tmp) for a given job, the name of this directory includes 
 # the JOBID, so if two jobs run on the same node, each will definitely get their own TMPDIR
 cd \$TMPDIR
+
 # Copy input data to the nodes fast local disk
 cp \$SLURM_SUBMIT_DIR/* ./
+
 # copy the poetry virtual environment to local disk and activate,
 # seems to be the fastest option but it also seems to add a bit of RAM cost (not sure though)
-cp -r /users/PAS2164/deligkaris/.cache/pypoetry/virtualenvs/microsim-gKvDNsM8-py3.9 ./
-source ./microsim-gKvDNsM8-py3.9/bin/activate
+mkdir -p .cache/pypoetry/virtualenvs
+cp -r /users/PAS2164/deligkaris/.cache/pypoetry/virtualenvs/microsim-gKvDNsM8-py3.9 ./.cache/pypoetry/virtualenvs/
+export POETRY_CACHE_DIR=\$TMPDIR/.cache/pypoetry 
+source ./.cache/pypoetry/virtualenvs/microsim-gKvDNsM8-py3.9/bin/activate
 #this seems to be slower than copying the virtual environment to the local node and activating there
 #source /users/PAS2164/deligkaris/.cache/pypoetry/virtualenvs/microsim-gKvDNsM8-py3.9/bin/activate
+
 # copy the entire microsim code to the local compute node
 # otherwise the compute node will need to do a lot of IO operations to the home directory, 
 # which strains home dir storage nodes
@@ -138,10 +145,16 @@ export OMP_NUM_THREADS=\$SLURM_NTASKS
 # export INPUTFILE=\$SLURM_SUBMIT_DIR/"$inputFile"
 
 # run the code, if output is not directed, it goes to standard output
-poetry run python \$TMPDIR/"$inputFile" > \$SLURM_SUBMIT_DIR/"$outputFile"
+#poetry run python \$TMPDIR/"$inputFile" > \$TMPDIR/"$outputFile"
+#python \$TMPDIR/"$inputFile" > \$SLURM_SUBMIT_DIR/"$outputFile"
+\$TMPDIR/.cache/pypoetry/virtualenvs/microsim-gKvDNsM8-py3.9/bin/python3.9 \$TMPDIR/"$inputFile" > \$TMPDIR/"$outputFile"
 
 # if your results go to the compute node, copy results to proper home folder
-#cp data8.out \$SLURM_SUBMIT_DIR
+cd \$TMPDIR
+cp results.csv \$SLURM_SUBMIT_DIR
+cp "$outputFile" \$SLURM_SUBMIT_DIR
+#cp stderr.txt \$SLURM_SUBMIT_DIR
+#cp stdout.txt \$SLURM_SUBMIT_DIR
 
 # print date, time and store end time
 date
