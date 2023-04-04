@@ -22,7 +22,8 @@ use Array::Compare;
 use Data::Types qw/:all/;
 use Text::CSV_XS;
 
-use lib '/users/PAS2164/deligkaris/MICROSIM/SCRIPTS/'; # add directory to search path for modules
+#use lib '/users/PAS2164/deligkaris/MICROSIM/SCRIPTS/'; # add directory to search path for modules
+use lib '/fs/ess/PAS2139/christos/MICROSIM/SCRIPTS/';
 use microsimTrialset qw(checkIfProbability checkIfInteger checkIfPositive checkIfDivisibleBy2 checkIfIntegerMultiple checkIfSorted checkIfUnique readInputFile getComputingParameters writeInputFile submitJob writeSubFile writeCancelJobFile);
 
 #definitions
