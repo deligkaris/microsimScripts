@@ -121,8 +121,6 @@ cd \$TMPDIR
 # Copy input data to the nodes fast local disk
 cp \$SLURM_SUBMIT_DIR/* ./
 
-/fs/ess/PAS2139/christos/MICROSIM/CODE/VENV-CACHE/pypoetry/virtualenvs
-
 # copy the poetry virtual environment to local disk and activate,
 # need to export the poetry configuration variable for the cache directory in order for python to use the local python libraries
 # and not the ones from the home directory where the virtual environment was created

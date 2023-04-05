@@ -283,9 +283,9 @@ sub writeSubFile {
                                 "--ntasks-per-node=$nTasksPerNode ".
                                 "--time=$timePerCalculation  ".
                                 "--constraint=48core ";
-                                #"--sockets-per-node=$nSocketsPerNode ".  
-                                #"--cores-per-socket=$nCoresPerSocket ".
-                                #"--distribution=*:block:*";
+                                "--sockets-per-node=$nSocketsPerNode ".  
+                                "--cores-per-socket=$nCoresPerSocket ".
+                                "--distribution=*:block:*";
         chmod 0740, $fh;	# make script executable
         close $fh;
 }
