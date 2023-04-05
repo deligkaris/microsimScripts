@@ -282,7 +282,7 @@ sub writeSubFile {
         			"--nodes=$nNodes ".
                                 "--ntasks-per-node=$nTasksPerNode ".
                                 "--time=$timePerCalculation  ".
-                                "--constraint=48core ";
+                                "--constraint=48core ".
                                 "--sockets-per-node=$nSocketsPerNode ".  
                                 "--cores-per-socket=$nCoresPerSocket ".
                                 "--distribution=*:block:*";
