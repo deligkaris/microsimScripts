@@ -30,13 +30,13 @@ use microsimTrialset qw(getLogFile getFolderLogFile readInputFile getComputingPa
 my (@sampleSizes,@durations); 	# trial set parameters
 my (@dementia,@cv);  		# risk factors
 my ($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef); # references to arrays
-my ($nTrialsPerRiskset,$nRisksets,$nCalculations); 	# help divide calculation in smaller scale calculations
+my ($nTrialsPerRiskset,$nConcurrentTrials,$nRisksets,$nCalculations); 	# help divide calculation in smaller scale calculations
 my ($nTrialsPerCalculation,$nCalculationsPerRiskset,$nCores,$nProcesses);	# parameters of small scale calculations
 my ($nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation); # parameters of small scale calculations
-my ($iDem,$iCv,$iCalculationPerRiskset); 	# iterators
+my ($iRiskset); 	# iterators
 my (@cancelJobs); 	# store commands to cancel all submitted jobs (just in case)
 my (@folders,$folder,$folderInputFile,$folderSubFile,@folderDementia,@folderCv); 	# folder and folder arrays
-my ($inputFile,$fhInput,$fhSub,$subReturn,$fhCancelJobs);	# file and filehandles
+my ($microsimScript,$inputFile,$fhInput,$fhSub,$subReturn,$fhCancelJobs);	# file and filehandles
 my ($csv,$row);
 my ($header,$logFile,$fhLog,$folderLogFile,$fhFolder,$folderLogFileContents);
 
@@ -46,59 +46,50 @@ if(@ARGV < 1 || @ARGV > 1) { #need to get exactly one argument
 	exit 1;
 }
 
-# readInputFile will return nProcesses which we will ignore here because we do not need it, and may be undef
-($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef,$nTrialsPerRiskset,undef) = readInputFile($ARGV[0]);
-
+#all trialset-related parameters
+($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef,$nTrialsPerRiskset,$nConcurrentTrials,
+#all SLURM-related parameters
+$nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation) = readInputFile($ARGV[0]);
+# get the name of the python script
+$microsimScript = $ARGV[1];
 # derefence arrays and assign to array variables
 @sampleSizes = @$sampleSizesRef;
 @durations = @$durationsRef;
 @dementia = @$dementiaRef;
 @cv = @$cvRef;
-
-($nTrialsPerCalculation,$nCores,$nProcesses,$nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation) = getComputingParameters();
-
 # calculate some important quantities
-$nRisksets = scalar(@dementia) * scalar(@cv);
-$nCalculationsPerRiskset = $nTrialsPerRiskset / $nTrialsPerCalculation;
-$nCalculations = $nRisksets * $nCalculationsPerRiskset;
+$nRisksets = scalar(@dementia);
 
 $header = 1;
 
 $logFile = getLogFile($ARGV[0]);
 open($fhLog,'>',$logFile);
 
-foreach $iDem (0..scalar(@dementia)-1) {
-        foreach $iCv (0..scalar(@cv)-1) {
-                foreach $iCalculationPerRiskset (0..$nCalculationsPerRiskset-1) {
+foreach $iRiskset (0..$nRisksets-1) {
+        $folder = "RISKSET-".$iRiskset;
+        chdir($folder);
 
-			$folder = "DEMENTIA-".$iDem."-CV-".$iCv."-SET-".$iCalculationPerRiskset;
-        		chdir($folder);
-			
-			$folderLogFile = getFolderLogFile($folder);
-			
-			if( open($fhFolder,'<',$folderLogFile) ) {
-				if ($header == 1) {
-					$folderLogFileContents = do { local $/; <$fhFolder> };
-					$header=0;
-				}
-				else {
-					<$fhFolder>; 	# skip header
-					$folderLogFileContents = do { local $/; <$fhFolder> };
-				}
-				close $fhFolder;
+        $folderLogFile = getFolderLogFile($folder);
 
-   				print $fhLog "$folderLogFileContents";
-
-		        	chdir("../");
-			}
-			else {
-				close $fhFolder;
-                                print("ERROR in $0: cannot open $folderLogFile\n\n");
-                                chdir("../");
-			}
-		}
-	}
-}			
+        if( open($fhFolder,'<',$folderLogFile) ) {
+                if ($header == 1) {
+                        $folderLogFileContents = do { local $/; <$fhFolder> };
+                        $header=0;
+                }
+                else {
+                        <$fhFolder>;    # skip header
+                        $folderLogFileContents = do { local $/; <$fhFolder> };
+                }
+                close $fhFolder;
+                print $fhLog "$folderLogFileContents";
+                chdir("../");
+        }
+        else {
+                close $fhFolder;
+                print("ERROR in $0: cannot open $folderLogFile in $folder\n");
+                chdir("../");
+        }
+}
 
 close $fhLog;
 

@@ -49,7 +49,7 @@ if(@ARGV < 2 || @ARGV > 2) { #need to get exactly two arguments
 }
 
 #all trialset-related parameters
-($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef,$nTrialsPerRiskset,$nConcurrentTrials,
+($sampleSizesRef,$durationsRef,$dementiaLowerRef, $dementiaUpperRef, $cvLowerRef, $cvUpperRef, $nTrialsPerRiskset,$nConcurrentTrials,
 #all SLURM-related parameters
 $nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation) = readInputFile($ARGV[0]);
 
@@ -59,11 +59,13 @@ $microsimScript = $ARGV[1];
 # derefence arrays and assign to array variables
 @sampleSizes = @$sampleSizesRef;
 @durations = @$durationsRef;
-@dementia = @$dementiaRef;
-@cv = @$cvRef;
+@dementiaLower = @$dementiaLowerRef;
+@dementiaUpper = @$dementiaUpperRef;
+@cvLower = @$cvLowerRef;
+@cvUpper = @$cvUpperRef;
 
 # calculate some important quantities
-$nRisksets = scalar(@dementia);
+$nRisksets = scalar(@dementiaLower);
 
 @cancelJobs = ();	# array that will hold shell script commands that allow to cancel all submitted calculations
 $folderSubFile = "submitCommand.sh";	# file name of shell script that submits job
@@ -78,7 +80,12 @@ foreach $iRiskset (0..$nRisksets-1) {
 	copy("../".$microsimScript, "./".$microsimScript);
 			
 	$folderInputFile = writeInputFile($folder,
-					  \@sampleSizes,\@durations,$dementia[$iRiskset],$cv[$iRiskset],$nTrialsPerRiskset,
+					  \@sampleSizes,\@durations,
+                                          $dementiaLower[$iRiskset],
+                                          $dementiaUpper[$iRiskset],
+                                          $cvLower[$iRiskset],
+                                          $cvUpper[$iRiskset],
+                                          $nTrialsPerRiskset,
 					  $nConcurrentTrials);
 
 	writeSubFile($folderSubFile,$microsimScript,

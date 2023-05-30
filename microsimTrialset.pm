@@ -166,9 +166,13 @@ sub readInputFile {
  	$row = $csv->getline($fh); # read durations
  	@durations = @$row;
  	$row = $csv->getline($fh); # read dementia thresholds
- 	@dementia = @$row;
+ 	@dementiaLower = @$row;
+        $row = $csv->getline($fh); # read dementia thresholds
+        @dementiaUpper = @$row;
  	$row = $csv->getline($fh); # read cv thresholds
- 	@cv = @$row;
+ 	@cvLower = @$row;
+        $row = $csv->getline($fh); # read cv thresholds
+        @cvUpper = @$row;
  	$row = $csv->getline($fh); # read number of trials
  	$nTrialsPerRiskset = $$row[0];
 	$row = $csv->getline($fh); # read number of trials to run concurrently (using the parallel trialset class)
@@ -188,7 +192,7 @@ sub readInputFile {
 	$row = $csv->getline($fh); # read time per calculation
 	$timePerCalculation = $$row[0];
 	# must return references to arrays (hence \@), perl cannot return arrays
-	return \@sampleSizes,\@durations,\@dementia,\@cv,$nTrialsPerRiskset,$nConcurrentTrials,
+	return \@sampleSizes,\@durations,\@dementiaLower,\@dementiaUpper,\@cvLower,\@cvUpper,$nTrialsPerRiskset,$nConcurrentTrials,
 		$nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation; 
 }
 
@@ -214,7 +218,8 @@ sub getFolderLogFile {
 	my($folder) = @_;
 	my($logFile);
 
-	$logFile = lc($folder)."-inputLog.csv";
+	#$logFile = lc($folder)."-inputLog.csv";
+        $logFile = "results.csv";
 
 	return $logFile;
 }
@@ -229,14 +234,15 @@ sub getLogFile {
 	#@inputFileParts = split('.', $inputFile);
 	($inputFileName,undef,undef) = fileparse($inputFile,'\..*'); 
 	#$logFile = $inputFileParts[0]."Log.csv";
-	$logFile = $inputFileName."Log.csv";
+	#$logFile = $inputFileName."Log.csv";
+        $logFile = "log.csv";
 
 	return $logFile;
 }
 
 sub writeInputFile {
 
-	my ($folder,$sampleSizesRef,$durationsRef,$dementia,$cv,$nTrialsPerCalculation,$nProcesses) = @_;
+	my ($folder,$sampleSizesRef,$durationsRef,$dementiaLower,$dementiaUpper,$cvLower,$cvUpper,$nTrialsPerCalculation,$nProcesses) = @_;
 	my (@sampleSizes,@durations);
 	my ($inputFile,$fh);
 
@@ -246,11 +252,11 @@ sub writeInputFile {
 
 	$inputFile = lc($folder)."-input.csv";
        	open($fh,'>',$inputFile);
-       	print $fh "# sample sizes, durations, dementia thresholds, cv thresholds, trialset size, processes\n";
+       	print $fh "# sample sizes, durations, dementia lower threshold, dementia upper threshold, cv lower threshold, cv upper threshold, trialset size, processes\n";
 	print $fh "# \n";
        	print $fh join(', ',@sampleSizes), "\n";
        	print $fh join(', ',@durations), "\n";
-       	print $fh "$dementia\n$cv\n$nTrialsPerCalculation\n$nProcesses";
+       	print $fh "$dementiaLower\n$dementiaUpper\n$cvLower\n$cvUpper\n$nTrialsPerCalculation\n$nProcesses";
        	close $fh;
 
 	return $inputFile;
