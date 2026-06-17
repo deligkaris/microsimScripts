@@ -11,7 +11,9 @@ Note: In order to run any of these, they will need to be in your path.
   to the location of your MicroSim directory, which is specific to your machine. This script can be used with 
   little to none modifications in any computing cluster that utilizes SLURM as the resource manager (not just OSC) and 
   likely with few modifications in cases the resource manager is different.
-  
+ 
+Note: these perl files are no longer in use since microsim can utilize more than a single core to carry out trials.
+ 
 - submicSet.pl: Perl script that submits several microsim trials to OSC's resource manager (SLURM)
 
   Usage: submicSet.pl yourSetInputFile.csv yourPythonScript.py. 
