@@ -150,7 +150,7 @@ sub readInputFile {
 	my($inputFile) = @_; # input: the input file name
 	# local variables
 	my($csv,$row,$fh);
-	my(@sampleSizes,@durations,@dementia,@cv,$nTrialsPerRiskset,$nConcurrentTrials);
+	my(@sampleSizes,@durations,@dementiaLower,@dementiaUpper,@cvLower,@cvUpper,$nTrialsPerRiskset,$nConcurrentTrials);
 	my($nNodes,$nCores,$nProcesses,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation);
 
 	# use a CSV parsing library to read the input CSV file
@@ -161,6 +161,7 @@ sub readInputFile {
  	open $fh, "<", "$inputFile" or die "$inputFile: $!";
  	$row = $csv->getline($fh); # skip the header
 	$row = $csv->getline($fh); # skip the header
+        $row = $csv->getline($fh); # skip the header
  	$row = $csv->getline($fh); # read sample sizes
  	@sampleSizes = @$row;
  	$row = $csv->getline($fh); # read durations

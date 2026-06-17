@@ -31,8 +31,8 @@ use microsimTrialset qw(readInputFile getComputingParameters writeInputFile subm
 
 #definitions
 my (@sampleSizes,@durations); 	# trial set parameters
-my (@dementia,@cv);  		# risk factors
-my ($sampleSizesRef,$durationsRef,$dementiaRef,$cvRef); # references to arrays
+my (@dementiaLower,@dementiaUpper,@cvLower,@cvUpper);  		# risk factors
+my ($sampleSizesRef,$durationsRef,$dementiaLowerRef,$dementiaUpperRef,$cvLowerRef,$cvUpperRef); # references to arrays
 my ($nTrialsPerRiskset,$nConcurrentTrials,$nRisksets,$nCalculations); 	# help divide calculation in smaller scale calculations
 my ($nTrialsPerCalculation,$nCalculationsPerRiskset,$nCores,$nProcesses);	# parameters of small scale calculations
 my ($nNodes,$nTasksPerNode,$nSocketsPerNode,$nCoresPerSocket,$timePerCalculation); # parameters of small scale calculations
